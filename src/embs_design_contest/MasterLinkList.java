@@ -1,4 +1,4 @@
-package lsi.instructions;
+package embs_design_contest;
 
 import java.util.HashMap;
 
