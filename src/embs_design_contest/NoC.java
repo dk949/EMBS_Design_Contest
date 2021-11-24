@@ -4,7 +4,7 @@ public class NoC {
 	
 	private Task[] tasks;
 	private Communication[] comms;
-	private final int dimensionX, dimensionY;
+	public final int dimensionX, dimensionY;
 
 	public NoC(Task[] tasks, Communication[] comms, int x, int y) {
 		this.tasks=tasks;
@@ -15,7 +15,7 @@ public class NoC {
 	
 	
 	private int elementAtCoords(int x, int y) {
-		return dimensionY*y + x;
+		return dimensionX*y + x;
 	}
 	
 	
@@ -131,8 +131,8 @@ public class NoC {
 		System.out.println("receiverTask = " + receiverTask.getTaskNumber());
 		
 		// Get the cores that sender and receiver tasks are mapped to and create elements		
-		Element sender = new Element(mapping[senderTask.getTaskNumber()], dimensionX, dimensionY);
-		Element receiver = new Element(mapping[receiverTask.getTaskNumber()], dimensionX, dimensionY);
+		Element sender = new Element(mapping[senderTask.getTaskNumber()], dimensionX);
+		Element receiver = new Element(mapping[receiverTask.getTaskNumber()], dimensionX);
 
 		System.out.println("senderCore = " + sender.num);
 		System.out.println("receiverCore = " + receiver.num);
@@ -159,7 +159,8 @@ public class NoC {
 		//		of the communication to the master link list for the correct link
 		// Go through all links in the master link list, count the overutilised links, return the count
 		
-		return overUtilLinks;
+		return 0;
+//		return overUtilLinks;
 	}
 
 }
