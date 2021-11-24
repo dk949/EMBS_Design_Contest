@@ -100,50 +100,50 @@ public class GeneticMapper implements FitnessEvaluator<int[]>{
 
 	
 	public double getInterprocessorCommunication(int[] mapping){
-		
+
 		double interprocessorComms = 0;
 
-		
-		for(int j=0;j<comms.length;j++){
-			
-			int procSender = mapping[comms[j].sender.getTaskNumber()];
-			int procReceiver = mapping[comms[j].receiver.getTaskNumber()];
-			
-			if(procSender!=procReceiver){
-				
-				interprocessorComms += comms[j].getUtilisation();
-				
+
+		for (int j = 0; j < platform.comms.length; j++) {
+
+			int procSender = mapping[platform.comms[j].sender.getTaskNumber()];
+			int procReceiver = mapping[platform.comms[j].receiver.getTaskNumber()];
+
+			if (procSender != procReceiver) {
+
+				interprocessorComms += platform.comms[j].getUtilisation();
+
 			}
-			
+
 		}
-		
-		
+
+
 		return interprocessorComms;
 	}
 	
-public double getInterprocessorCommunicationVolume(int[] mapping){
-		
+	public double getInterprocessorCommunicationVolume(int[] mapping){
+
 		double interprocessorComms = 0;
 
-		
-		for(int j=0;j<comms.length;j++){
-			
-			System.out.println("Comm: " + comms[j].getCommFlowNumber());
-			
-			int procSender = mapping[comms[j].sender.getTaskNumber()];
-			int procReceiver = mapping[comms[j].receiver.getTaskNumber()];
-			
+
+		for (int j = 0; j < platform.comms.length; j++) {
+
+			System.out.println("Comm: " + platform.comms[j].getCommFlowNumber());
+
+			int procSender = mapping[platform.comms[j].sender.getTaskNumber()];
+			int procReceiver = mapping[platform.comms[j].receiver.getTaskNumber()];
+
 			System.out.println("procSender: " + procSender);
 			System.out.println("procReceiver: " + procReceiver);
-			
-			if(procSender!=procReceiver){
-				
-				interprocessorComms += comms[j].getUtilisation();
-				System.out.println("Add : " + comms[j].getUtilisation());
-				
+
+			if (procSender != procReceiver) {
+
+				interprocessorComms += platform.comms[j].getUtilisation();
+				System.out.println("Add : " + platform.comms[j].getUtilisation());
+
+				}
+
 			}
-			
-		}
 		
 		
 		return interprocessorComms;

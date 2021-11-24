@@ -3,7 +3,7 @@ package embs_design_contest;
 public class NoC {
 	
 	private Task[] tasks;
-	private Communication[] comms;
+	public Communication[] comms;
 	public final int dimensionX, dimensionY;
 	public MasterLinkList masterList;
 
@@ -14,8 +14,7 @@ public class NoC {
 		this.dimensionY = y;
 		masterList = new MasterLinkList();
 	}
-	
-	
+
 	private int elementAtCoords(int x, int y) {
 		return dimensionX*y + x;
 	}
