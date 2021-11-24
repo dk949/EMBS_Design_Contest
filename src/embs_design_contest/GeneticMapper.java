@@ -21,19 +21,16 @@ import lsi.evo.IntegerArrayMutation;
 
 public class GeneticMapper implements FitnessEvaluator<int[]>{
 
-	Task[] tasks;
-	Communication[] comms;
+	NoC platform;
 	int processors;
 	EvolutionEngine<int[]> engine;
 	double alpha = 1.0;
 	double beta = 1.0;
 	
-	public GeneticMapper(Task[] tasks, Communication[] comms, int processors) {
+	public GeneticMapper(Task[] tasks, Communication[] comms, int x, int y) {
 
-		this.tasks=tasks;
-		this.comms=comms;
-		this.processors=processors;
-
+		platform = new NoC(tasks, comms, x, y);
+		this.processors = x*y;
 		
 		
 		// generates chromosomes with tasks.size() genes (one gene per task)
@@ -87,41 +84,14 @@ public class GeneticMapper implements FitnessEvaluator<int[]>{
 	public double getFitness(int[] arg0, List<? extends int[]> arg1) {
 
 		
-		int overUtilProcs = getOverutilisedProcessors(arg0);
+		int overUtilProcs = platform.getNumberOfOverutilisedProcessors(arg0);
 			
 		double interprocessorComms = getInterprocessorCommunication(arg0);
 		
+
+		
 		return alpha * overUtilProcs + beta * interprocessorComms;
 
-	}
-
-
-	// calculates the number of overutilised processors
-	
-	public int getOverutilisedProcessors(int[] mapping){
-		
-		
-		double[] utilisation = new double[processors];
-		
-		for(int i=0;i<mapping.length;i++){
-			
-			utilisation[mapping[i]]+= tasks[i].getUtilisation();
-			
-		}
-		
-		int overUtilProcs = 0;
-		
-		for(int u=0;u<utilisation.length;u++){
-			
-			if(utilisation[u]>1) {
-				
-				overUtilProcs++;
-				
-			}
-			
-		}
-		
-		return overUtilProcs;
 	}
 	
 	
@@ -179,10 +149,6 @@ public double getInterprocessorCommunicationVolume(int[] mapping){
 		return interprocessorComms;
 	}
 	
-	public List<Link> getLinksUsedByCommunication(int[] mapping, Communication comm) {
-		Task sender = comm.getSender();
-		Task receiver = comm.getReceiver();
-	}
 	
 
 	public boolean isNatural() {

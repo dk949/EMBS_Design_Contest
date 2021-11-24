@@ -85,7 +85,7 @@ public class GeneticMapperTest {
 		// instantiate mapper
 		// passing as argument the array of tasks, array of comms and number of processors in the platform
 		
-		GeneticMapper mapper = new GeneticMapper(tasks, comms, 9);
+		GeneticMapper mapper = new GeneticMapper(tasks, comms, 3, 3);
 		
 		
 		// set parameters to tune the two elements of the fitness function
@@ -112,14 +112,23 @@ public class GeneticMapperTest {
 		frame.pack();
 		frame.setVisible(true);
 		
-		int[] result = mapper.getEngine().evolve(1000, 20, new GenerationCount(180)); // evolve for 180 generations
-		System.out.println("Execution terminated - best mapping:");
-		System.out.println(printMapping(result));
-		System.out.println("");
+//		int[] result = mapper.getEngine().evolve(1000, 20, new GenerationCount(180)); // evolve for 180 generations
+//		System.out.println("Execution terminated - best mapping:");
+//		System.out.println(printMapping(result));
+//		System.out.println("");
+//		
+//		System.out.println("Overloaded processors: "+mapper.getOverutilisedProcessors(result));
+//		System.out.println("Interprocessor comms: "+mapper.getInterprocessorCommunicationVolume(result));
 		
-		System.out.println("Overloaded processors: "+mapper.getOverutilisedProcessors(result));
-		System.out.println("Interprocessor comms: "+mapper.getInterprocessorCommunicationVolume(result));
+		int[] exampleMapping = new int[] {5, 2, 3, 5, 7, 0, 2, 2, 0, 2, 4, 5, 0, 4, 4, 4, 0, 4, 7, 7, 3, 8, 0, 5, 4, 6, 0, 6, 7, 3, 4, 4, 3, 1, 1, 2, 8, 5, 2, 2, 1, 5, 4, 6, 7, 5, 0, 8, 2, 0, 8, 0, 7, 6};
+		NoC platform = new NoC(tasks, comms, 3, 3);
+		Link[] linksUsed = platform.getLinksUsedByCommunication(exampleMapping, comms[0]);
+		for(int i=0; i<linksUsed.length; i++) {
+			System.out.println(linksUsed[i].toString());
+		}
 		
+		int overUtilProcs = platform.getNumberOfOverutilisedProcessors(exampleMapping);
+		System.out.println("Number of over-utilised processors: " + Integer.toString(overUtilProcs));
 		
 		date = new Date();
 		System.out.println("");
