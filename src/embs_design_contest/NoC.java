@@ -144,5 +144,22 @@ public class NoC {
 		
 		return XYRoute(sender, receiver);
 	}
+	
+	
+	/**
+	 * Calculates the number of over-utilised communication links in a given mapping
+	 * @param mapping A mapping of tasks to processing cores
+	 * @return The number of over-utilised communication links
+	 */
+	public int getNumberOfOverutilisedCommsLinks(int[] mapping) {
+		// TODO: Implement
+		// Loop through all communications in comms and for each one:
+		// * get the links used (getLinksUsedByCommunication())
+		// * loop through the returned list of links used and for each one add the utilisation
+		//		of the communication to the master link list for the correct link
+		// Go through all links in the master link list, count the overutilised links, return the count
+		
+		return overUtilLinks;
+	}
 
 }
