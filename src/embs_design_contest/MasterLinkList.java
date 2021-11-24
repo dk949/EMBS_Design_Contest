@@ -15,8 +15,8 @@ public class MasterLinkList {
         costs.put(l, tmp + val);
     }
 
-    long howManyOverUtelised(){
-        long count = 0;
+    int howManyOverUtelised(){
+        int count = 0;
         for(var cost : costs.values()){
             count += cost >= 1.0 ? 1 :0;
         }

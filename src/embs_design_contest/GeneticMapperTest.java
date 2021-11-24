@@ -128,14 +128,12 @@ public class GeneticMapperTest {
 		}
 		
 		int overUtilProcs = platform.getNumberOfOverutilisedProcessors(exampleMapping);
-		System.out.println("Number of over-utilised processors: " + Integer.toString(overUtilProcs));
+		System.out.println("Number of over-utilised processors: " + overUtilProcs);
 		
 		date = new Date();
 		System.out.println("");
 		System.out.println(dateFormat.format(date));
-		
-		
-		
+
 	}
 	
 	

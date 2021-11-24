@@ -5,12 +5,14 @@ public class NoC {
 	private Task[] tasks;
 	private Communication[] comms;
 	public final int dimensionX, dimensionY;
+	public MasterLinkList masterList;
 
 	public NoC(Task[] tasks, Communication[] comms, int x, int y) {
 		this.tasks=tasks;
 		this.comms=comms;
 		this.dimensionX = x;
 		this.dimensionY = y;
+		masterList = new MasterLinkList();
 	}
 	
 	
@@ -152,15 +154,21 @@ public class NoC {
 	 * @return The number of over-utilised communication links
 	 */
 	public int getNumberOfOverutilisedCommsLinks(int[] mapping) {
-		// TODO: Implement
+
 		// Loop through all communications in comms and for each one:
 		// * get the links used (getLinksUsedByCommunication())
 		// * loop through the returned list of links used and for each one add the utilisation
 		//		of the communication to the master link list for the correct link
 		// Go through all links in the master link list, count the overutilised links, return the count
-		
-		return 0;
+
+		for (Communication comm : comms) {
+			for (Link link : getLinksUsedByCommunication(mapping, comm)) {
+				masterList.add(link, comm.utilisation);
+			}
+		}
+
 //		return overUtilLinks;
+		return masterList.howManyOverUtelised();
 	}
 
 }
