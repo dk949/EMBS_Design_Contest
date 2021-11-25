@@ -175,9 +175,7 @@ public class GeneticMapperTest {
 		date = new Date();
 		System.out.println("");
 		System.out.println(dateFormat.format(date));
-		
-		
-		
+
 	}
 	
 	

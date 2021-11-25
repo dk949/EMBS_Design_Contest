@@ -7,6 +7,7 @@ public class NoC {
 	public final int dimensionX, dimensionY;
 	public double factorFc_min, factorFc_max, factorFc;
 	public double factorFi_min, factorFi_max, factorFi;
+	public MasterLinkList masterList;
 
 	/**
 	 * Standard constructor for NoC. Assumes no clock frequency scaling possible
@@ -20,6 +21,9 @@ public class NoC {
 		this.comms=comms;
 		this.dimensionX = x;
 		this.dimensionY = y;
+		
+		masterList = new MasterLinkList();
+		
 		factorFc_min = factorFc_max = factorFi_min = factorFi_max = 1.0;
 	}
 	
@@ -40,6 +44,8 @@ public class NoC {
 		this.comms=comms;
 		this.dimensionX = x;
 		this.dimensionY = y;
+		
+		masterList = new MasterLinkList();
 		
 		this.factorFc_max = Fc_max;
 		this.factorFi_max = Fi_max;
@@ -74,8 +80,7 @@ public class NoC {
 		this.factorFc = this.factorFc_max;
 		this.factorFi = this.factorFi_max;
 	}
-	
-	
+
 	private int elementAtCoords(int x, int y) {
 		return dimensionX*y + x;
 	}
@@ -214,15 +219,21 @@ public class NoC {
 	 * @return The number of over-utilised communication links
 	 */
 	public int getNumberOfOverutilisedCommsLinks(int[] mapping) {
-		// TODO: Implement
+
 		// Loop through all communications in comms and for each one:
 		// * get the links used (getLinksUsedByCommunication())
 		// * loop through the returned list of links used and for each one add the utilisation
 		//		of the communication to the master link list for the correct link
 		// Go through all links in the master link list, count the overutilised links, return the count
-		
-		return 0;
+
+		for (Communication comm : comms) {
+			for (Link link : getLinksUsedByCommunication(mapping, comm)) {
+				masterList.add(link, comm.utilisation);
+			}
+		}
+
 //		return overUtilLinks;
+		return masterList.howManyOverUtelised();
 	}
 	
 	/**

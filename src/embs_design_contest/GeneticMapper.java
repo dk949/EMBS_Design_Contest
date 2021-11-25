@@ -107,7 +107,61 @@ public class GeneticMapper implements FitnessEvaluator<int[]>{
 		
 		
 		return alpha * numberOfOverutilisedProcessors + alpha * numberOfOverutilisedCommsLinks + beta * (maxX * maxY);// + gamma * (platform.getFactorFc() + platform.getFactorFi());
+	}
+	
+	
+	
+	// calculates the total inter-processor communication volume
 
+	
+	public double getInterprocessorCommunication(int[] mapping){
+
+		double interprocessorComms = 0;
+
+
+		for (int j = 0; j < platform.comms.length; j++) {
+
+			int procSender = mapping[platform.comms[j].sender.getTaskNumber()];
+			int procReceiver = mapping[platform.comms[j].receiver.getTaskNumber()];
+
+			if (procSender != procReceiver) {
+
+				interprocessorComms += platform.comms[j].getUtilisation();
+
+			}
+
+		}
+
+
+		return interprocessorComms;
+	}
+	
+	public double getInterprocessorCommunicationVolume(int[] mapping){
+
+		double interprocessorComms = 0;
+
+
+		for (int j = 0; j < platform.comms.length; j++) {
+
+			System.out.println("Comm: " + platform.comms[j].getCommFlowNumber());
+
+			int procSender = mapping[platform.comms[j].sender.getTaskNumber()];
+			int procReceiver = mapping[platform.comms[j].receiver.getTaskNumber()];
+
+			System.out.println("procSender: " + procSender);
+			System.out.println("procReceiver: " + procReceiver);
+
+			if (procSender != procReceiver) {
+
+				interprocessorComms += platform.comms[j].getUtilisation();
+				System.out.println("Add : " + platform.comms[j].getUtilisation());
+
+				}
+
+			}
+		
+		
+		return interprocessorComms;
 	}
 	
 	
