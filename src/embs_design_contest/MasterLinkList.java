@@ -1,13 +1,15 @@
 package embs_design_contest;
 
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MasterLinkList {
 
-    HashMap<Link, Double> costs;
+    ConcurrentHashMap<Link, Double> costs;
+
 
     MasterLinkList(){
-        costs = new HashMap<Link, Double>();
+        costs = new ConcurrentHashMap<>();
     };
 
     void add(Link l, double val){
@@ -15,10 +17,10 @@ public class MasterLinkList {
         costs.put(l, tmp + val);
     }
 
-    int howManyOverUtelised(){
+    int howManyOverUtelised(double factorFi){
         int count = 0;
         for(var cost : costs.values()){
-            count += cost >= 1.0 ? 1 :0;
+            count += cost * (1/factorFi) >= 1.0 ? 1 :0;
         }
         return count;
     }

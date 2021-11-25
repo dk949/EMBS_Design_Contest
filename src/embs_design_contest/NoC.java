@@ -7,7 +7,6 @@ public class NoC {
 	public final int dimensionX, dimensionY;
 	public double factorFc_min, factorFc_max, factorFc;
 	public double factorFi_min, factorFi_max, factorFi;
-	public MasterLinkList masterList;
 
 	/**
 	 * Standard constructor for NoC. Assumes no clock frequency scaling possible
@@ -22,8 +21,7 @@ public class NoC {
 		this.dimensionX = x;
 		this.dimensionY = y;
 		
-		masterList = new MasterLinkList();
-		
+
 		factorFc_min = factorFc_max = factorFi_min = factorFi_max = 1.0;
 	}
 	
@@ -45,8 +43,7 @@ public class NoC {
 		this.dimensionX = x;
 		this.dimensionY = y;
 		
-		masterList = new MasterLinkList();
-		
+
 		this.factorFc_max = Fc_max;
 		this.factorFi_max = Fi_max;
 		
@@ -92,7 +89,7 @@ public class NoC {
 	 * @return The number of over-utilised processors
 	 */
 	public int getNumberOfOverutilisedProcessors(int[] mapping) {
-		
+
 		double[] utilisation = new double[mapping.length];
 		
 		for(int i=0; i<mapping.length; i++) {
@@ -102,7 +99,7 @@ public class NoC {
 		int overUtilProcs = 0;
 		
 		for(int u=0; u<utilisation.length; u++) {
-			if(utilisation[u]>1) {
+			if(utilisation[u] * (1/factorFc) > 1) {
 				overUtilProcs++;
 			}
 		}
@@ -188,26 +185,26 @@ public class NoC {
 	 */
 	public Link[] getLinksUsedByCommunication(int[] mapping, Communication comm) {
 		
-		System.out.println("Mapping = " + GeneticMapperTest.printMapping(mapping));
+//		System.out.println("Mapping = " + GeneticMapperTest.printMapping(mapping));
 		
 		// Get sender and receiver tasks
 		Task senderTask = comm.getSender();
 		Task receiverTask = comm.getReceiver();
 
-		System.out.println("senderTask = " + senderTask.getTaskNumber());
-		System.out.println("receiverTask = " + receiverTask.getTaskNumber());
+//		System.out.println("senderTask = " + senderTask.getTaskNumber());
+//		System.out.println("receiverTask = " + receiverTask.getTaskNumber());
 		
 		// Get the cores that sender and receiver tasks are mapped to and create elements		
 		Element sender = new Element(mapping[senderTask.getTaskNumber()], dimensionX);
 		Element receiver = new Element(mapping[receiverTask.getTaskNumber()], dimensionX);
 
-		System.out.println("senderCore = " + sender.num);
-		System.out.println("receiverCore = " + receiver.num);
-
-		System.out.println("sender.x = " + sender.x);
-		System.out.println("sender.y = " + sender.y);
-		System.out.println("receiver.x = " + receiver.x);
-		System.out.println("receiver.y = " + receiver.y);
+//		System.out.println("senderCore = " + sender.num);
+//		System.out.println("receiverCore = " + receiver.num);
+//
+//		System.out.println("sender.x = " + sender.x);
+//		System.out.println("sender.y = " + sender.y);
+//		System.out.println("receiver.x = " + receiver.x);
+//		System.out.println("receiver.y = " + receiver.y);
 		
 		return XYRoute(sender, receiver);
 	}
@@ -220,6 +217,7 @@ public class NoC {
 	 */
 	public int getNumberOfOverutilisedCommsLinks(int[] mapping) {
 
+		MasterLinkList masterList = new MasterLinkList();
 		// Loop through all communications in comms and for each one:
 		// * get the links used (getLinksUsedByCommunication())
 		// * loop through the returned list of links used and for each one add the utilisation
@@ -233,7 +231,9 @@ public class NoC {
 		}
 
 //		return overUtilLinks;
-		return masterList.howManyOverUtelised();
+		var i = masterList.howManyOverUtelised(factorFi);
+		System.out.println("Overutilised" + i);
+		return i;
 	}
 	
 	/**

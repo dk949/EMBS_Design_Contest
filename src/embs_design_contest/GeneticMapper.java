@@ -82,31 +82,36 @@ public class GeneticMapper implements FitnessEvaluator<int[]>{
 	public double getFitness(int[] arg0, List<? extends int[]> arg1) {
 
 		int[] mapping = arg0;
-		
+
 		int numberOfOverutilisedProcessors = platform.getNumberOfOverutilisedProcessors(mapping);
 			
 		int numberOfOverutilisedCommsLinks = platform.getNumberOfOverutilisedCommsLinks(mapping);
 		
-		HashSet<Element> elementsUsed = new HashSet<Element>();
-		for(int i=0; i<mapping.length; i++) {
-			elementsUsed.add(new Element(mapping[i], platform.dimensionX));
-		}
-		int maxX = 0;
-		int maxY = 0;
-		for(Element e : elementsUsed) {
-			if(e.x > maxX) {
-				maxX = e.x;
-			}
-			if(e.y > maxY) {
-				maxY = e.y;
-			}
-		}
-		maxX++;
-		maxY++;
-		
-		
-		
-		return alpha * numberOfOverutilisedProcessors + alpha * numberOfOverutilisedCommsLinks + beta * (maxX * maxY);// + gamma * (platform.getFactorFc() + platform.getFactorFi());
+//		HashSet<Element> elementsUsed = new HashSet<Element>();
+//		for(int i=0; i<mapping.length; i++) {
+//			elementsUsed.add(new Element(mapping[i], platform.dimensionX));
+//		}
+//		int maxX = 0;
+//		int maxY = 0;
+//		for(Element e : elementsUsed) {
+//			if(e.x > maxX) {
+//				maxX = e.x;
+//			}
+//			if(e.y > maxY) {
+//				maxY = e.y;
+//			}
+//		}
+//		maxX++;
+//		maxY++;
+
+		var fitness = alpha * numberOfOverutilisedProcessors + alpha * numberOfOverutilisedCommsLinks;
+
+		System.out.println("alpha = " +  alpha);
+		System.out.println("numberOfOverutilisedProcessors = " + numberOfOverutilisedProcessors);
+		System.out.println("numberOfOverutilisedCommsLinks = " + numberOfOverutilisedCommsLinks);
+		System.out.println("fitness = " + fitness);
+
+		return fitness;
 	}
 	
 	

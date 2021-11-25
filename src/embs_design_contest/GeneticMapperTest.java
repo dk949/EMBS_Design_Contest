@@ -7,15 +7,13 @@ import java.util.HashSet;
 
 import javax.swing.JFrame;
 
-import org.uncommons.watchmaker.framework.EvolutionObserver;
-import org.uncommons.watchmaker.framework.PopulationData;
 import org.uncommons.watchmaker.framework.termination.GenerationCount;
 import org.uncommons.watchmaker.swing.evolutionmonitor.EvolutionMonitor;
 
 public class GeneticMapperTest {
 	
-	public static final int NoCDimensionX = 7;
-	public static final int NoCDimensionY = 7;
+	public static final int NoCDimensionX = 3;
+	public static final int NoCDimensionY = 5;
 
 	public static void main(String[] args){
 		
@@ -89,7 +87,7 @@ public class GeneticMapperTest {
 		// instantiate mapper
 		// passing as argument the array of tasks, array of comms and number of processors in the platform
 		
-		NoC platform = new NoC(tasks, comms, NoCDimensionX, NoCDimensionY);//, 0.001, 0.199, 0.001, 0.199);
+		NoC platform = new NoC(tasks, comms, NoCDimensionX, NoCDimensionY, 0.001, 1.199, 0.001, 1.199);
 		GeneticMapper mapper = new GeneticMapper(platform);
 		
 		
@@ -99,13 +97,16 @@ public class GeneticMapperTest {
 		
 
 		// use watchmaker framework's debugging and visualisation features
-		
-		mapper.getEngine().addEvolutionObserver(new EvolutionObserver<int[]>()
-				{
-		    public void populationUpdate(PopulationData<? extends int[]> data)
-		    {
-		        System.out.println("Generation: " + data.getGenerationNumber() + ", fitness: " + data.getBestCandidateFitness() + ", mesh size: " + calculateUsedMeshSize(data.getBestCandidate()) + ", best factorFc: " + platform.optimiseProcessorFrequency(data.getBestCandidate()) + ", mapping: "+ printMapping(data.getBestCandidate()));
-		    }
+
+		mapper.getEngine().addEvolutionObserver(data -> {
+			System.out.println("Generation: " + data.getGenerationNumber() +
+					", fitness: " + data.getBestCandidateFitness() +
+					", mesh size: " + calculateUsedMeshSize(data.getBestCandidate()) +
+					", best factorFc: " + platform.optimiseProcessorFrequency(data.getBestCandidate()) +
+					", mapping: "+ printMapping(data.getBestCandidate()));
+
+
+			System.out.println("number of overutilised links" + platform.getNumberOfOverutilisedCommsLinks(data.getBestCandidate()));
 		});
 	
 		EvolutionMonitor<int[]> monitor = new EvolutionMonitor<int[]>();
@@ -117,23 +118,25 @@ public class GeneticMapperTest {
 		frame.pack();
 		frame.setVisible(true);
 		
-		int[] result = mapper.getEngine().evolve(1000, 20, new GenerationCount(10)); // evolve for 180 generations
+		int[] result = mapper.getEngine().evolve(1000, 20, new GenerationCount(1000)); // evolve for 180 generations
 		System.out.println("Execution terminated - best mapping:");
 		System.out.println(printMapping(result));
 		System.out.println("");
-		
-		
+
+
 		System.out.println("Dimensions used: " + calculateUsedMeshSize(result));
-		
+
 		System.out.println("");
 		printDeliverableMapping(result);
-		
-//		System.out.println("Overloaded processors: "+mapper.getOverutilisedProcessors(result));
+		System.out.println("Final number of overustilised links " + platform.getNumberOfOverutilisedCommsLinks(result));
+		System.out.println("Final number of overustilised processors " + platform.getNumberOfOverutilisedProcessors(result));
+
+//		System.out.println("Overloaded processors: " + mapper.getOverutilisedProcessors(result));
 //		System.out.println("Interprocessor comms: "+mapper.getInterprocessorCommunicationVolume(result));
 		
 //		int[] exampleMapping = new int[] {5, 2, 3, 5, 7, 0, 2, 2, 0, 2, 4, 5, 0, 4, 4, 4, 0, 4, 7, 7, 3, 8, 0, 5, 4, 6, 0, 6, 7, 3, 4, 4, 3, 1, 1, 2, 8, 5, 2, 2, 1, 5, 4, 6, 7, 5, 0, 8, 2, 0, 8, 0, 7, 6}; // 4x4
 //		int[] exampleMapping = new int[] {23, 14, 6, 1, 2, 3, 18, 4, 23, 21, 21, 1, 6, 14, 20, 16, 3, 5, 12, 19, 12, 20, 14, 9, 7, 20, 7, 1, 15, 2, 4, 11, 6, 21, 17, 2, 0, 8, 8, 1, 11, 17, 7, 3, 17, 23, 9, 23, 18, 22, 21, 17, 10, 19}; // 4x6
-//		NoC platform = new NoC(tasks, comms, NoCDimensionX, NoCDimensionY, 0.001, 1.199, 0.001, 1.199);
+//		NoC p = new NoC(tasks, comms, NoCDimensionX, NoCDimensionY, 0.001, 1.199, 0.001, 1.199);
 //		System.out.println(platform.factorFc_min + "," + platform.factorFc_max);
 //		System.out.println(platform.factorFi_min + "," + platform.factorFi_max);
 //
@@ -171,6 +174,9 @@ public class GeneticMapperTest {
 //			}
 //		}
 //		System.out.println("Comm with max utilisation is comm " + commWithMaxUtil + " with utilisation " + maxCommUtil);
+
+
+
 		
 		date = new Date();
 		System.out.println("");
