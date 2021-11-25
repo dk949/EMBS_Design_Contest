@@ -2,15 +2,77 @@ package embs_design_contest;
 
 public class NoC {
 	
-	private Task[] tasks;
-	private Communication[] comms;
+	public Task[] tasks;
+	public Communication[] comms;
 	public final int dimensionX, dimensionY;
+	public double factorFc_min, factorFc_max, factorFc;
+	public double factorFi_min, factorFi_max, factorFi;
 
+	/**
+	 * Standard constructor for NoC. Assumes no clock frequency scaling possible
+	 * @param tasks Array of Tasks
+	 * @param comms Array of Communications
+	 * @param x X dimension of 2D Mesh NoC
+	 * @param y Y dimension of 2D Mesh NoC
+	 */
 	public NoC(Task[] tasks, Communication[] comms, int x, int y) {
 		this.tasks=tasks;
 		this.comms=comms;
 		this.dimensionX = x;
 		this.dimensionY = y;
+		factorFc_min = factorFc_max = factorFi_min = factorFi_max = 1.0;
+	}
+	
+	/** Constructor for NoC with clock frequency scaling possible
+	 * @param tasks Array of Tasks
+	 * @param comms Array of Communications
+	 * @param x X dimension of 2D Mesh NoC
+	 * @param y Y dimension of 2D Mesh NoC
+	 * @param Fc_min Lower bound on processor frequency factor Fc
+	 * @param Fc_max Upper bound on processor frequency factor Fc
+	 * @param Fi_min Lower bound on interconnect frequency factor Fi
+	 * @param Fi_max Upper bound on interconnect frequency factor Fi
+	 */
+	public NoC(Task[] tasks, Communication[] comms, int x, int y,
+			double Fc_min, double Fc_max, double Fi_min, double Fi_max) {
+		
+		this.tasks=tasks;
+		this.comms=comms;
+		this.dimensionX = x;
+		this.dimensionY = y;
+		
+		this.factorFc_max = Fc_max;
+		this.factorFi_max = Fi_max;
+		
+		// The minimum processor frequency scaling factor is bound by the task
+		// with the highest processor utilisation:
+		// 		Utilisation cannot exceed 1.0
+		// 		scaled utilisation = utilisation at nominal frequency * 1/factorFc
+		// A task with utilisation u can only be scaled down by a factor of u
+		// Beyond this its scaled utilisation exceeds 1.0
+		// Find the task with the highest utilisation and set the minimum scaling factor
+		double maxTaskUtil = 0.0;
+		for(int i=0; i<tasks.length; i++) {
+			if(tasks[i].utilisation > maxTaskUtil) {
+				maxTaskUtil = tasks[i].utilisation;
+			}
+		}
+		this.factorFc_min = maxTaskUtil;
+		
+		// Same as for processor frequency scaling factor, the minimum interconnnect
+		// frequency scaling factor is bound by the communication with the highest utilisation
+		// Find it and set the minimum scaling factor
+		double maxCommUtil = 0.0;
+		for(int i=0; i<comms.length; i++) {
+			if(comms[i].utilisation > maxCommUtil && comms[i].sender.getTaskNumber() != comms[i].receiver.getTaskNumber()) {
+				maxCommUtil = comms[i].utilisation;
+			}
+		}
+		this.factorFi_min = maxCommUtil;
+		
+		// Set frequency scaling factors to their maximums.
+		this.factorFc = this.factorFc_max;
+		this.factorFi = this.factorFi_max;
 	}
 	
 	
@@ -161,6 +223,34 @@ public class NoC {
 		
 		return 0;
 //		return overUtilLinks;
+	}
+	
+	/**
+	 * Find the minimum processor frequency scaling factor such that
+	 * all processing cores for the given mapping are not over-utilised
+	 * @param mapping A mapping of tasks to processing cores
+	 * @return The minimum scaling factor possible without causing over-utilisation
+	 */
+	public double optimiseProcessorFrequency(int[] mapping) {
+		
+		double[] utilisation = new double[mapping.length];
+		
+		for(int i=0; i<mapping.length; i++) {
+			utilisation[mapping[i]]+= tasks[i].getUtilisation();
+		}
+		
+		double maxUtilisation = 0.0;
+		
+		for(int u=0; u<utilisation.length; u++) {
+			if(utilisation[u]>maxUtilisation) {
+				maxUtilisation = utilisation[u];
+			}
+		}
+		return maxUtilisation;
+	}
+	
+	public void optimiseInterconnectFrequency() {
+		
 	}
 
 }
