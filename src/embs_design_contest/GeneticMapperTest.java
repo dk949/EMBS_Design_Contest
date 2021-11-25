@@ -3,6 +3,7 @@ package embs_design_contest;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 
 import javax.swing.JFrame;
 
@@ -12,6 +13,9 @@ import org.uncommons.watchmaker.framework.termination.GenerationCount;
 import org.uncommons.watchmaker.swing.evolutionmonitor.EvolutionMonitor;
 
 public class GeneticMapperTest {
+	
+	public static final int NoCDimensionX = 7;
+	public static final int NoCDimensionY = 7;
 
 	public static void main(String[] args){
 		
@@ -85,7 +89,8 @@ public class GeneticMapperTest {
 		// instantiate mapper
 		// passing as argument the array of tasks, array of comms and number of processors in the platform
 		
-		GeneticMapper mapper = new GeneticMapper(tasks, comms, 3, 3);
+		NoC platform = new NoC(tasks, comms, NoCDimensionX, NoCDimensionY);//, 0.001, 0.199, 0.001, 0.199);
+		GeneticMapper mapper = new GeneticMapper(platform);
 		
 		
 		// set parameters to tune the two elements of the fitness function
@@ -99,7 +104,7 @@ public class GeneticMapperTest {
 				{
 		    public void populationUpdate(PopulationData<? extends int[]> data)
 		    {
-		        System.out.println("Generation: " + data.getGenerationNumber() + ", fitness: " + data.getBestCandidateFitness() + ", mapping: "+ printMapping(data.getBestCandidate()));
+		        System.out.println("Generation: " + data.getGenerationNumber() + ", fitness: " + data.getBestCandidateFitness() + ", mesh size: " + calculateUsedMeshSize(data.getBestCandidate()) + ", best factorFc: " + platform.optimiseProcessorFrequency(data.getBestCandidate()) + ", mapping: "+ printMapping(data.getBestCandidate()));
 		    }
 		});
 	
@@ -112,23 +117,60 @@ public class GeneticMapperTest {
 		frame.pack();
 		frame.setVisible(true);
 		
-//		int[] result = mapper.getEngine().evolve(1000, 20, new GenerationCount(180)); // evolve for 180 generations
-//		System.out.println("Execution terminated - best mapping:");
-//		System.out.println(printMapping(result));
-//		System.out.println("");
-//		
+		int[] result = mapper.getEngine().evolve(1000, 20, new GenerationCount(10)); // evolve for 180 generations
+		System.out.println("Execution terminated - best mapping:");
+		System.out.println(printMapping(result));
+		System.out.println("");
+		
+		
+		System.out.println("Dimensions used: " + calculateUsedMeshSize(result));
+		
+		System.out.println("");
+		printDeliverableMapping(result);
+		
 //		System.out.println("Overloaded processors: "+mapper.getOverutilisedProcessors(result));
 //		System.out.println("Interprocessor comms: "+mapper.getInterprocessorCommunicationVolume(result));
 		
-		int[] exampleMapping = new int[] {5, 2, 3, 5, 7, 0, 2, 2, 0, 2, 4, 5, 0, 4, 4, 4, 0, 4, 7, 7, 3, 8, 0, 5, 4, 6, 0, 6, 7, 3, 4, 4, 3, 1, 1, 2, 8, 5, 2, 2, 1, 5, 4, 6, 7, 5, 0, 8, 2, 0, 8, 0, 7, 6};
-		NoC platform = new NoC(tasks, comms, 3, 3);
-		Link[] linksUsed = platform.getLinksUsedByCommunication(exampleMapping, comms[0]);
-		for(int i=0; i<linksUsed.length; i++) {
-			System.out.println(linksUsed[i].toString());
-		}
+//		int[] exampleMapping = new int[] {5, 2, 3, 5, 7, 0, 2, 2, 0, 2, 4, 5, 0, 4, 4, 4, 0, 4, 7, 7, 3, 8, 0, 5, 4, 6, 0, 6, 7, 3, 4, 4, 3, 1, 1, 2, 8, 5, 2, 2, 1, 5, 4, 6, 7, 5, 0, 8, 2, 0, 8, 0, 7, 6}; // 4x4
+//		int[] exampleMapping = new int[] {23, 14, 6, 1, 2, 3, 18, 4, 23, 21, 21, 1, 6, 14, 20, 16, 3, 5, 12, 19, 12, 20, 14, 9, 7, 20, 7, 1, 15, 2, 4, 11, 6, 21, 17, 2, 0, 8, 8, 1, 11, 17, 7, 3, 17, 23, 9, 23, 18, 22, 21, 17, 10, 19}; // 4x6
+//		NoC platform = new NoC(tasks, comms, NoCDimensionX, NoCDimensionY, 0.001, 1.199, 0.001, 1.199);
+//		System.out.println(platform.factorFc_min + "," + platform.factorFc_max);
+//		System.out.println(platform.factorFi_min + "," + platform.factorFi_max);
+//
+//		int overUtilProcs = platform.getNumberOfOverutilisedProcessors(exampleMapping);
+//		System.out.println("Number of over-utilised processors: " + Integer.toString(overUtilProcs));
+//		
+//		Link[] linksUsed = platform.getLinksUsedByCommunication(exampleMapping, comms[0]);
+//		for(int i=0; i<linksUsed.length; i++) {
+//			System.out.println(linksUsed[i].toString());
+//		}
 		
-		int overUtilProcs = platform.getNumberOfOverutilisedProcessors(exampleMapping);
-		System.out.println("Number of over-utilised processors: " + Integer.toString(overUtilProcs));
+//		System.out.println("First link used is " + linksUsed[0]);
+//		MasterLinkList LinkUtilisations = new MasterLinkList();
+//		LinkUtilisations.add(linksUsed[0], comms[0].utilisation);
+//		System.out.println(LinkUtilisations.costs.get(linksUsed[0]));
+//		LinkUtilisations.add(linksUsed[0], comms[0].utilisation);
+//		System.out.println(LinkUtilisations.costs.get(linksUsed[0]));
+		
+//		double maxTaskUtil = 0.0;
+//		int taskWithMaxUtil = 0;
+//		for(int i=0; i<tasks.length; i++) {
+//			if(tasks[i].utilisation > maxTaskUtil) {
+//				maxTaskUtil = tasks[i].utilisation;
+//				taskWithMaxUtil = tasks[i].getTaskNumber();
+//			}
+//		}
+//		System.out.println("Task with max utilisation is task " + taskWithMaxUtil + " with utilisation " + maxTaskUtil);
+//		
+//		double maxCommUtil = 0.0;
+//		int commWithMaxUtil = 0;
+//		for(int i=0; i<comms.length; i++) {
+//			if(comms[i].utilisation > maxCommUtil && comms[i].sender.getTaskNumber() != comms[i].receiver.getTaskNumber()) {
+//				maxCommUtil = comms[i].utilisation;
+//				commWithMaxUtil = comms[i].getCommFlowNumber();
+//			}
+//		}
+//		System.out.println("Comm with max utilisation is comm " + commWithMaxUtil + " with utilisation " + maxCommUtil);
 		
 		date = new Date();
 		System.out.println("");
@@ -148,6 +190,35 @@ public class GeneticMapperTest {
 		}
 		output = output + mapping[mapping.length-1] + "]";
 		return output;
+	}
+	
+	public static void printDeliverableMapping(int[] mapping) {
+		for(int taskNum=0; taskNum<mapping.length; taskNum++) {
+			System.out.print(taskNum + " ");
+			Element core = new Element(mapping[taskNum], NoCDimensionX);
+			System.out.print(core.x + " " + core.y + "\n");
+		}
+	}
+	
+	public static String calculateUsedMeshSize(int[] mapping) {
+		HashSet<Element> elementsUsed = new HashSet<Element>();
+		for(int i=0; i<mapping.length; i++) {
+			elementsUsed.add(new Element(mapping[i], NoCDimensionX));
+		}
+		int maxX = 0;
+		int maxY = 0;
+		for(Element e : elementsUsed) {
+			if(e.x > maxX) {
+				maxX = e.x;
+			}
+			if(e.y > maxY) {
+				maxY = e.y;
+			}
+		}
+		maxX++;
+		maxY++;
+		
+		return Integer.toString(maxX) + "x" + Integer.toString(maxY);
 	}
 	
 	
