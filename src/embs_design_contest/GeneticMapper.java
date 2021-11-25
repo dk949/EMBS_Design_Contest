@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.HashSet;
 
 import org.uncommons.maths.random.MersenneTwisterRNG;
 import org.uncommons.maths.random.Probability;
@@ -26,17 +27,18 @@ public class GeneticMapper implements FitnessEvaluator<int[]>{
 	EvolutionEngine<int[]> engine;
 	double alpha = 1.0;
 	double beta = 1.0;
+	double gamma = 1.0;
 	
-	public GeneticMapper(Task[] tasks, Communication[] comms, int x, int y) {
+	public GeneticMapper(NoC platform) {
 
-		platform = new NoC(tasks, comms, x, y);
-		this.processors = x*y;
+		this.platform = platform;
+		this.processors = platform.dimensionX * platform.dimensionY;
 		
 		
 		// generates chromosomes with tasks.size() genes (one gene per task)
 		// and genes can contain integers from 0 up to "processors - 1"
 		
-		IntegerArrayFactory factory = new IntegerArrayFactory(processors-1, tasks.length);
+		IntegerArrayFactory factory = new IntegerArrayFactory(processors-1, platform.tasks.length);
 		
 		
 		// create a pipeline that applies cross-over then mutation
@@ -76,77 +78,36 @@ public class GeneticMapper implements FitnessEvaluator<int[]>{
 	
 	// method called by the evolutionary engine
 	// to calculate the fitness of a given individual
-	
-	// simplistic approach:
-	// fitness = alpha * number of overutilised processors + beta * inter-processor communication volume
-
 
 	public double getFitness(int[] arg0, List<? extends int[]> arg1) {
 
+		int[] mapping = arg0;
 		
-		int overUtilProcs = platform.getNumberOfOverutilisedProcessors(arg0);
+		int numberOfOverutilisedProcessors = platform.getNumberOfOverutilisedProcessors(mapping);
 			
-		double interprocessorComms = getInterprocessorCommunication(arg0);
+		int numberOfOverutilisedCommsLinks = platform.getNumberOfOverutilisedCommsLinks(mapping);
 		
-
-		
-		return alpha * overUtilProcs + beta * interprocessorComms;
-
-	}
-	
-	
-	
-	// calculates the total inter-processor communication volume
-
-	
-	public double getInterprocessorCommunication(int[] mapping){
-		
-		double interprocessorComms = 0;
-
-		
-		for(int j=0;j<comms.length;j++){
-			
-			int procSender = mapping[comms[j].sender.getTaskNumber()];
-			int procReceiver = mapping[comms[j].receiver.getTaskNumber()];
-			
-			if(procSender!=procReceiver){
-				
-				interprocessorComms += comms[j].getUtilisation();
-				
-			}
-			
+		HashSet<Element> elementsUsed = new HashSet<Element>();
+		for(int i=0; i<mapping.length; i++) {
+			elementsUsed.add(new Element(mapping[i], platform.dimensionX));
 		}
-		
-		
-		return interprocessorComms;
-	}
-	
-public double getInterprocessorCommunicationVolume(int[] mapping){
-		
-		double interprocessorComms = 0;
-
-		
-		for(int j=0;j<comms.length;j++){
-			
-			System.out.println("Comm: " + comms[j].getCommFlowNumber());
-			
-			int procSender = mapping[comms[j].sender.getTaskNumber()];
-			int procReceiver = mapping[comms[j].receiver.getTaskNumber()];
-			
-			System.out.println("procSender: " + procSender);
-			System.out.println("procReceiver: " + procReceiver);
-			
-			if(procSender!=procReceiver){
-				
-				interprocessorComms += comms[j].getUtilisation();
-				System.out.println("Add : " + comms[j].getUtilisation());
-				
+		int maxX = 0;
+		int maxY = 0;
+		for(Element e : elementsUsed) {
+			if(e.x > maxX) {
+				maxX = e.x;
 			}
-			
+			if(e.y > maxY) {
+				maxY = e.y;
+			}
 		}
+		maxX++;
+		maxY++;
 		
 		
-		return interprocessorComms;
+		
+		return alpha * numberOfOverutilisedProcessors + alpha * numberOfOverutilisedCommsLinks + beta * (maxX * maxY);// + gamma * (platform.getFactorFc() + platform.getFactorFi());
+
 	}
 	
 	
@@ -160,6 +121,7 @@ public double getInterprocessorCommunicationVolume(int[] mapping){
 	
 	public void setAlpha(double alpha){this.alpha=alpha;}
 	public void setBeta(double beta){this.beta=beta;}
+	public void setGamma(double gamma){this.gamma=gamma;}
 	
 	
 }
